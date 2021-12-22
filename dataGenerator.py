@@ -197,4 +197,3 @@ if __name__=='__main__':
                           batch_size=8,
                           target_size=(128,800))
     
-    pass
