@@ -4,13 +4,13 @@ from data import *
 import cv2
 from matplotlib import pyplot as plt
 from deep_utils import callbacks
+import tensorflow as tf
 
 gpu = tf.config.list_physical_devices('GPU') 
 cpu = tf.config.list_physical_devices('CPU') 
 tf.config.experimental.set_memory_growth(gpu[0], True)
 
-#tf.config.experimental.set_visible_devices(cpu[0])
-#os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 batch = 8
 epochs = 60
 
