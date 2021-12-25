@@ -92,6 +92,8 @@ def mask(src_path,
          consider_no_object=False,
          class_id=None
          ):
+    if not multi_mask :
+        assert not consider_no_object, 'consider_no_object enabeld but multi_mask is False'
     #-------------------------------------
     #define paths
     annotation_path = os.path.join(src_path, annotation_folder)
@@ -162,15 +164,16 @@ def mask(src_path,
   
 if __name__ == '__main__':
     
-    #binary('severstal-steel-defect-detection/', 'data/binary', 'train_images', 'annotations')
+    #binary('severstal-steel-defect-detection/', 'data/allb', 'train_images', 'annotations')
     
     mask(src_path='severstal-steel-defect-detection/',
-         dst_path='data/mask_class',
+         dst_path='data/allm',
          num_classes=4,
          mask_size=(256,1600),
          image_folder='train_images',
          annotation_folder='annotations',
-         multi_mask=True,
-         consider_no_object=True
+         multi_mask=False,
+         consider_no_object=False
          )
+    
          

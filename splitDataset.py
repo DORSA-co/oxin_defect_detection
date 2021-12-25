@@ -8,8 +8,28 @@ src_path = 'data/steel_defects/all/'
 dst_path = 'data/steel_defects'
 split = 0.2
 
-
-
+def bar(counter,n):
+    percent = counter/n*100
+    os.system('cls')
+    print('percent={:.2f}%  |{}| n={} of {}'.format(percent, int(percent/2)*'◼' + int(50 - percent/2)*'-' ,int(counter), n))
+    
+    
+    
+#_________________________________________________________________________________________________________________
+#explain:
+#   split mask dataset into train and test
+#
+#arg:
+#   src_path: main path of dataset that contain to subfolder for image and annotation
+#   dst_path: main path for dst dataset
+#   image_folder: image sub folder in src_path
+#   label_folder: label sub folder in src_path
+#   multi_mask_class: if label_folder contain some folder for each class it should be True, O.W if label folder 
+#                       only contain images for one class it should be False
+#   split: split percent for Test                        
+#return:
+#   None
+#_________________________________________________________________________________________________________________
 def split_unet_dataset(src_path, dst_path, img_folder='image', label_folder='label', mulit_mask_class=False, split=0.2):
     imgs_list = os.listdir( os.path.join( src_path, img_folder))
     #-------------------------------------
@@ -40,7 +60,16 @@ def split_unet_dataset(src_path, dst_path, img_folder='image', label_folder='lab
         if os.path.exists( _path_ ):
             shutil.rmtree( _path_ )
             
+    
+            
     #-------------------------------------
+    __route__ = os.path.split(dst_path)
+    for i in range(len(__route__)):
+        __path__ = '//'.join(__route__[:i+1])
+        if not os.path.exists(__path__):
+            os.mkdir(__path__)
+    #-------------------------------------
+    
     #create all sub folders for dst
     for f1 in folders_1:
         _path_ = os.path.join( dst_path, f1)
@@ -88,10 +117,9 @@ def split_unet_dataset(src_path, dst_path, img_folder='image', label_folder='lab
                             
                         
             counter+=1  
-            percent = counter/nimage * 100
-            #if counter%20==0:
-            os.system('cls')
-            print('percent={:.2f}%  |{}| n={} of {}'.format(percent, int(percent/2)*'#' + int(50 - percent/2)*'-' ,int(counter), nimage))
+            if counter%5==0:
+                bar(counter,nimage)
+    bar(counter,nimage)
 
 
 
@@ -104,6 +132,6 @@ def split_unet_dataset(src_path, dst_path, img_folder='image', label_folder='lab
 
 
 if __name__ == '__main__':
-    split_unet_dataset('data/src', 'data/dst', img_folder='img', label_folder='lbl', mulit_mask_class=False, split=0.2)
+    split_unet_dataset('data/allmc', 'data/mask_class', img_folder='image', label_folder='label', mulit_mask_class=True, split=0.2)
 
 

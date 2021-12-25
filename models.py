@@ -6,7 +6,7 @@ from tensorflow.keras.models import *
 from tensorflow.keras.layers import *
 from tensorflow.keras.optimizers import *
 from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler
-from tensorflow.keras import backend as keras
+#from tensorflow.keras import backend as keras
 from deep_utils import metrics
 from tensorflow.keras import layers 
 
@@ -249,21 +249,36 @@ def resnet_unet(input_size,lr=1e-3, num_class=1, mode=BINARY):
 #_____________________________________________________________________________________________________________
 #
 #_____________________________________________________________________________________________________________
-def resnet_cnn(input_size,lr=1e-3, num_class=1, mode=BINARY):
-    preprocess_input = keras.applications.resnet_v2.preprocess_input
-    base_model = keras.applications.ResNet50V2(include_top=False, weights='imagenet', input_shape=input_size)
+def resnet_cnn(input_size,lr=1e-3, num_class=1, mode=BINARY, fine_tune_layer=-1, weights=None):
+    preprocess_input = tf.keras.applications.resnet_v2.preprocess_input
+    base_model = tf.keras.applications.ResNet50V2(include_top=False, weights='imagenet', input_shape=input_size)
     base_model.trainable = False
 
-    inpt = keras.Input(shape=input_size) 
+    inpt = tf.keras.Input(shape=input_size) 
     inpt_pre = preprocess_input(inpt)
-    out_base = base_model(inpt_pre)
-    x = keras.layers.GlobalAveragePooling2D()(out_base)
-    x = keras.layers.Dropout(0.2)(x)
-    x = keras.layers.Dense(512, activation='relu')(x)
-    #x = keras.layers.Dense(256, activation='relu')(x)
-    out = x = keras.layers.Dense(num_class, activation=__activation__[mode] )(x)
-    model = keras.Model(inpt, out)
     
+    #--------------------------------------------
+    out_base = base_model(inpt_pre)
+    #--------------------------------------------
+    x = tf.keras.layers.GlobalAveragePooling2D()(out_base)
+    x = tf.keras.layers.Dropout(0.2)(x)
+    x = tf.keras.layers.Dense(512, activation='relu')(x)
+    #x = keras.layers.Dense(256, activation='relu')(x)
+    out = x = tf.keras.layers.Dense(num_class, activation=__activation__[mode] )(x)
+    model = tf.keras.Model(inpt, out)
+    #--------------------------------------------
+    if weights is not None:
+        model.load_weights(weights)
+    #--------------------------------------------
+    if fine_tune_layer>0:
+        base_model = model.layers[3]
+        base_model.trainable = True
+        for i in range(fine_tune_layer):
+            base_model.layers[i].trainable = False
+    #--------------------------------------------        
+    
+
+        
     model.compile(optimizer = Adam(lr = lr),
                   loss = __loss__[mode], metrics = ['accuracy',
                                                     tf.keras.metrics.Precision(name='Precision'),
@@ -278,20 +293,33 @@ def resnet_cnn(input_size,lr=1e-3, num_class=1, mode=BINARY):
 #_____________________________________________________________________________________________________________________________
 #
 #_____________________________________________________________________________________________________________________________
-def xception_cnn(input_size,lr=1e-3, num_class=1, mode=BINARY):
-    preprocess_input = keras.applications.xception.preprocess_input
-    base_model = keras.applications.Xception(include_top=False, weights='imagenet', input_shape=input_size)
+def xception_cnn(input_size,lr=1e-3, num_class=1, mode=BINARY, fine_tune_layer=-1, weights=None):
+    preprocess_input = tf.keras.applications.xception.preprocess_input
+    base_model = tf.keras.applications.Xception(include_top=False, weights='imagenet', input_shape=input_size)
     base_model.trainable = False
 
-    inpt = keras.Input(shape=input_size) 
+    inpt = tf.keras.Input(shape=input_size) 
     inpt_pre = preprocess_input(inpt)
+    #--------------------------------------------
     out_base = base_model(inpt_pre)
-    x = keras.layers.GlobalAveragePooling2D()(out_base)
-    x = keras.layers.Dropout(0.2)(x)
-    x = keras.layers.Dense(512, activation='relu')(x)
-    x = keras.layers.Dense(256, activation='relu')(x)
-    out = keras.layers.Dense(num_class, activation= __activation__[mode] )(x)
-    model = keras.Model(inpt, out)
+    #--------------------------------------------
+    x = tf.keras.layers.GlobalAveragePooling2D()(out_base)
+    x = tf.keras.layers.Dropout(0.2)(x)
+    x = tf.keras.layers.Dense(512, activation='relu')(x)
+    x = tf.keras.layers.Dense(256, activation='relu')(x)
+    out = tf.keras.layers.Dense(num_class, activation= __activation__[mode] )(x)
+    model = tf.keras.Model(inpt, out)
+    
+    #--------------------------------------------
+    if weights is not None:
+        model.load_weights(weights)
+    #--------------------------------------------
+    if fine_tune_layer>0:
+        base_model = model.layers[3]
+        base_model.trainable = True
+        for i in range(fine_tune_layer):
+            base_model.layers[i].trainable = False
+    #--------------------------------------------
     
     model.compile(optimizer = Adam(lr = lr),
                   loss = __loss__[mode],
@@ -308,4 +336,6 @@ def xception_cnn(input_size,lr=1e-3, num_class=1, mode=BINARY):
 
 
 if __name__=='__main__':
-    model = resnet_unet( (128,800,1), num_class=5, mode=BINARY )
+    model = resnet_cnn( (128,800,3), num_class=5, mode=BINARY, fine_tune_layer=100 )
+    
+    end = True
