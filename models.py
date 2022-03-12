@@ -9,13 +9,33 @@ from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler
 #from tensorflow.keras import backend as keras
 from deep_utils import metrics
 from tensorflow.keras import layers 
-
+import segmentation_models as sm
+sm.set_framework('tf.keras')
+sm.framework()
 
 BINARY = 'binary'
 CATEGORICAL = 'categorical'
 
 __loss__ = {CATEGORICAL:'categorical_crossentropy', BINARY:'binary_crossentropy'}
 __activation__ = {CATEGORICAL:'softmax', BINARY:'sigmoid'}
+
+#_____________________________________________________________________________________________________________________________
+#
+#_____________________________________________________________________________________________________________________________
+def base_unet(input_size, num_class=1, lr=1e-3, mode=BINARY, pretained='imagenet', base_model='resnet34'):
+    if input_size[-1]!=3:
+        pretained = None
+    model = sm.Unet(base_model, input_shape=input_size, classes=num_class, activation=__activation__[mode], encoder_weights=pretained)
+
+    iou = metrics.iou()
+    model.compile(optimizer = Adam(learning_rate=lr),
+                  loss = __loss__[mode],
+                  metrics = ['accuracy', tf.keras.metrics.Precision(name='Precision'),tf.keras.metrics.Recall(name='Recall'), iou])
+    
+    model.summary()
+    return model
+
+
 #_____________________________________________________________________________________________________________________________
 #
 #_____________________________________________________________________________________________________________________________
