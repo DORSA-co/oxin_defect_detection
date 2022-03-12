@@ -4,16 +4,15 @@ from tensorflow.keras import optimizers
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 import os
+import copy
 
-aug_dict = dict(rotation_range=0.2,
-                    width_shift_range=0.05,
-                    height_shift_range=0.05,
-                    shear_range=0.1,
+aug_dict = dict(rotation_range=15,
+                    width_shift_range=0.1,
+                    height_shift_range=0.1,
+                    shear_range=0.05,
                     zoom_range=0.1,
                     horizontal_flip=True,
-                    brightness_range=[0.6,1],
-                    vertical_flip = True,
-                    fill_mode='nearest',
+                    fill_mode='constant',            
                     )
 
 
@@ -154,7 +153,7 @@ def maskGenerator(path,
                     mask_datagen.cval = 0
                     
             mask_generator.append(
-                mask_datagen.flow_from_directory(
+                copy.deepcopy(mask_datagen).flow_from_directory(
                 os.path.join(path, mask_folder),
                 classes = [subfolder] ,
                 class_mode = None,
@@ -195,14 +194,15 @@ if __name__=='__main__':
                           aug_dict, 
                           subfolders_mask=['0','1','2','3','4'], 
                           batch_size=8,
-                          target_size=(128,800))
+                          target_size=(128,800),
+                          bg_idx=0)    
     
     
     train_nc = maskGenerator('data/mask/train',
                           'image',
                           'label',
                           aug_dict, 
-                          batch_size=8,
+                          batch_size=1,
                           target_size=(128,800))
     
     import cv2
