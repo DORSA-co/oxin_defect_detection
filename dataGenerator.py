@@ -103,7 +103,8 @@ def maskGenerator(path,
                   image_color_mode = "grayscale",
                   mask_color_mode = "grayscale",
                   image_save_prefix  = "image",
-                  mask_save_prefix  = "mask"):
+                  mask_save_prefix  = "mask",
+                  bg_idx=None):
     '''
     can generate image and mask at the same time
     use the same seed for image_datagen and mask_datagen to ensure the transformation for image and mask is the same
@@ -145,6 +146,13 @@ def maskGenerator(path,
     
     else:
         for subfolder in subfolders_mask:
+            
+            if bg_idx is not None:
+                if subfolder == subfolders_mask[bg_idx]:
+                    mask_datagen.cval = 255
+                else:
+                    mask_datagen.cval = 0
+                    
             mask_generator.append(
                 mask_datagen.flow_from_directory(
                 os.path.join(path, mask_folder),
@@ -181,7 +189,7 @@ if __name__=='__main__':
                                       aug_dict=aug_dict,
                                       validation_split=0.2)
 
-    train_c = maskGenerator('data/mask_class',
+    train_c = maskGenerator('data/mask_class/train',
                           'image',
                           'label',
                           aug_dict, 
@@ -190,10 +198,26 @@ if __name__=='__main__':
                           target_size=(128,800))
     
     
-    train_nc = maskGenerator('data/mask',
+    train_nc = maskGenerator('data/mask/train',
                           'image',
                           'label',
                           aug_dict, 
                           batch_size=8,
                           target_size=(128,800))
     
+    import cv2
+    for x,ys in train_c:
+        x = x[0]
+        ys=ys[0]
+        x = x * 255
+        ys = ys * 255
+        x = x.astype(np.uint8)
+        ys = ys.astype(np.uint8)
+        
+        
+        cv2.imshow('x',x)
+        ys = np.moveaxis(ys,[-1],[0])
+        for i, y in enumerate(ys):
+            cv2.imshow('y{}'.format(i),y)
+        
+        cv2.waitKey(0)
