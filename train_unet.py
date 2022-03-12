@@ -15,8 +15,8 @@ tf.config.experimental.set_memory_growth(gpu[0], True)
 
 batch = 8
 epochs = 60
-train_path = 'data/steel_defect_class/train'
-test_path =  'data/steel_defect_class/test'
+train_path = 'data/mask/train'
+test_path =  'data/mask/test'
 train_data_count = 5333
 test_data_count = 1333
 input_size = (128,800,1)
@@ -51,15 +51,16 @@ my_callback = callbacks.CustomCallback('checkpoint.h5')
 
 
 #model.load_weights('ch.h5')
-model.fit(  trainGen,
-            steps_per_epoch=int(train_data_count/batch) + 1,
-            epochs=epochs,
-            callbacks=[my_callback ],
-            validation_data=testGen,
-            validation_steps=test_data_count//batch + 1, 
-            initial_epoch=0)
 
-model.save('resnet_unet.h5')
+# model.fit(  trainGen,
+#             steps_per_epoch=int(train_data_count/batch) + 1,
+#             epochs=epochs,
+#             callbacks=[my_callback ],
+#             validation_data=testGen,
+#             validation_steps=test_data_count//batch + 1, 
+#             initial_epoch=0)
+
+# model.save('resnet_unet.h5')
 model.load_weights('resnet_unet.h5')
 
 
@@ -67,6 +68,7 @@ model.load_weights('resnet_unet.h5')
 #_______________________________________________________________________________________________________________
 #
 #_______________________________________________________________________________________________________________
+cnt=0
 for fname in os.listdir( os.path.join(test_path, 'image')):
     
     lbl = cv2.imread(os.path.join( test_path, 'label/'+fname ),0)
@@ -106,8 +108,12 @@ for fname in os.listdir( os.path.join(test_path, 'image')):
     cv2.imshow('out-0.3', cv2.bitwise_and(img,img, mask=ou1))
     cv2.imshow('out-0.5', cv2.bitwise_and(img,img, mask=ou2))
     cv2.imshow('out-0.7', cv2.bitwise_and(img,img, mask=ou3))
-    cv2.waitKey(0)
-
+    key = cv2.waitKey(0)
+    if key==ord('s') or key==ord('S'):
+        cv2.imwrite('{}_img.jpg'.format(cnt),img)
+        cv2.imwrite('{}_res.jpg'.format(cnt),cv2.bitwise_and(img,img, mask=ou2))
+        cnt+=1
+    
 #_______________________________________________________________________________________________________________
 #
 #_______________________________________________________________________________________________________________

@@ -83,7 +83,7 @@ model.load_weights('resnet_unet.h5')
 #_______________________________________________________________________________________________________________
 #
 #_______________________________________________________________________________________________________________
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 
 for imgs,labels in testGen:
     
